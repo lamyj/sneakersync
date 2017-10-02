@@ -1,0 +1,93 @@
+#!/usr/bin/env python
+
+import datetime
+import os
+import socket
+import subprocess
+import sys
+
+import yaml
+
+def main():
+    if sys.argv[1:] not in [["to", "disk"], ["from", "disk"]]:
+        print "Error: {} <to disk | from disk>".format(sys.argv[0])
+        return 1
+    
+    direction = " ".join(sys.argv[1:])
+    
+    local = "/Users/julien"
+    remote = "/Volumes/Sneakernet"
+    
+    sync_data_path = "sync_data.yml"
+    
+    here = os.path.abspath(os.path.dirname(sys.argv[0]))
+    sync_data = read_sync_data(os.path.join(here, sync_data_path))
+    
+    if direction == "to disk":
+        if sync_data["previous_direction"] == "to disk":
+            confirmed = confirm(
+                "WARNING: "
+                "do you want to overwrite the previous synchronization data "
+                "(synchronized from {} on {})?".format(
+                    sync_data["previous_host"], sync_data["previous_date"]))
+            if not confirmed:
+                return 0
+            
+        source = local
+        destination = remote
+        
+    elif direction == "from disk":
+        if sync_data["previous_direction"] == "from disk":
+            confirmed = confirm(
+                "WARNING: "
+                "do you want to overwrite the data on your local disk "
+                "(from {} on {})?".format(
+                    sync_data["previous_host"], sync_data["previous_date"]))
+            if not confirmed:
+                return 0
+            confirmed = confirm("Are you really sure?")
+            if not confirmed:
+                return 0
+        
+        source = remote
+        destination = local
+        
+    else:
+        print "ERROR: unknown direction \"{}\"".format(direction)
+    
+    synchronize(source, destination)
+    sync_data["previous_direction"] = direction
+    sync_data["previous_date"] = datetime.datetime.now()
+    sync_data["previous_host"] = socket.gethostname()
+    write_sync_data(sync_data, sync_data_path)
+
+def read_sync_data(path):
+    sync_data = {
+        "previous_direction": None,
+        "previous_date": None,
+        "previous_host": None,
+    }
+    
+    if os.path.isfile(path):
+        with open(path) as fd:
+            data = yaml.load(fd)
+            if data:
+                sync_data.update(data)
+    
+    return sync_data
+
+def synchronize(source, destination):
+    print "TODO: rsync -aX --progress --stats {} {}".format(source, destination)
+
+def confirm(message):
+    user_input = ""
+    while user_input.lower() not in ["y", "n"]: 
+        user_input = raw_input("{} [yn] ".format(message))
+    return (user_input == "y")
+
+def write_sync_data(sync_data, path):
+    with open(path, "w") as fd:
+        yaml.dump(sync_data, fd)    
+
+if __name__ == "__main__":
+    sys.exit(main())
