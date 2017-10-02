@@ -18,10 +18,11 @@ def main():
     local = "/Users/julien"
     remote = "/Volumes/Sneakernet"
     
-    sync_data_path = "sync_data.yml"
-    
     here = os.path.abspath(os.path.dirname(sys.argv[0]))
-    sync_data = read_sync_data(os.path.join(here, sync_data_path))
+    sync_data_path = os.path.join(here, "sync_data.yml")
+    
+    
+    sync_data = read_sync_data(sync_data_path)
     
     if direction == "to disk":
         if sync_data["previous_direction"] == "to disk":
@@ -29,7 +30,8 @@ def main():
                 "WARNING: "
                 "do you want to overwrite the previous synchronization data "
                 "(synchronized from {} on {})?".format(
-                    sync_data["previous_host"], sync_data["previous_date"]))
+                    sync_data["previous_host"], 
+                    sync_data["previous_date"].strftime("%c")))
             if not confirmed:
                 return 0
             
@@ -42,7 +44,8 @@ def main():
                 "WARNING: "
                 "do you want to overwrite the data on your local disk "
                 "(from {} on {})?".format(
-                    sync_data["previous_host"], sync_data["previous_date"]))
+                    sync_data["previous_host"], 
+                    sync_data["previous_date"].strftime("%c")))
             if not confirmed:
                 return 0
             confirmed = confirm("Are you really sure?")
