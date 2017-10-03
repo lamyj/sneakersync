@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 import datetime
 import os
 import socket
@@ -16,60 +17,74 @@ else:
 
 import yaml
 
+local = "/Users/julien"
+remote = "/Volumes/Sneakernet"
+
 def main():
-    if sys.argv[1:] not in [["to", "disk"], ["from", "disk"]]:
-        print "Error: {} <to disk | from disk>".format(sys.argv[0])
-        return 1
+    parser = argparse.ArgumentParser(
+        description="Send and receive files through the sneakernet")
+    parser.add_argument(
+        "--sync-data-path",default=os.path.join(here, "sneakernet.dat"))
+    subparsers = parser.add_subparsers(help="Sub-commands help")
     
-    direction = " ".join(sys.argv[1:])
+    send_parser = subparsers.add_parser(
+        "send", help="Send data on the sneakernet",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    send_parser.set_defaults(function=send)
     
-    local = "/Users/julien"
-    remote = "/Volumes/Sneakernet"
+    receive_parser = subparsers.add_parser(
+        "receive", help="Receive data from the sneakernet",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    receive_parser.set_defaults(function=receive)
     
+    arguments = vars(parser.parse_args())
+    function = arguments.pop("function")
+    function(**arguments)
     
-    sync_data_path = os.path.join(here, "sync_data.yml")
-    
-    
+    return 0
+
+def send(sync_data_path):
     sync_data = read_sync_data(sync_data_path)
-    
-    if direction == "to disk":
-        if sync_data["previous_direction"] == "to disk":
-            confirmed = confirm(
-                "WARNING: "
-                "do you want to overwrite the previous synchronization data "
-                "(synchronized from {} on {})?".format(
-                    sync_data["previous_host"], 
-                    sync_data["previous_date"].strftime("%c")))
-            if not confirmed:
-                return 0
-            
-        source = local
-        destination = remote
+    if sync_data["previous_direction"] == "send":
+        confirmed = confirm(
+            "WARNING: "
+            "do you want to re-send the current files "
+            "(sent from {} on {})?".format(
+                sync_data["previous_host"], 
+                sync_data["previous_date"].strftime("%c")))
+        if not confirmed:
+            return 0
         
-    elif direction == "from disk":
-        if sync_data["previous_direction"] == "from disk":
-            confirmed = confirm(
-                "WARNING: "
-                "do you want to overwrite the data on your local disk "
-                "(from {} on {})?".format(
-                    sync_data["previous_host"], 
-                    sync_data["previous_date"].strftime("%c")))
-            if not confirmed:
-                return 0
-            confirmed = confirm("Are you really sure?")
-            if not confirmed:
-                return 0
-        
-        source = remote
-        destination = local
-        
-    else:
-        print "ERROR: unknown direction \"{}\"".format(direction)
+    source = local
+    destination = remote
     
     synchronize(source, destination)
-    sync_data["previous_direction"] = direction
+    sync_data["previous_direction"] = "send"
     sync_data["previous_date"] = datetime.datetime.now()
     sync_data["previous_host"] = socket.gethostname()
+    write_sync_data(sync_data, sync_data_path)
+
+def receive(sync_data_path):
+    sync_data = read_sync_data(sync_data_path)
+    if sync_data["previous_direction"] == "receive":
+        confirmed = confirm(
+            "WARNING: "
+            "do you want to receive the current files again "
+            "(sent from {} on {})?".format(
+                sync_data["previous_host"], 
+                sync_data["previous_date"].strftime("%c")))
+        if not confirmed:
+            return 0
+        confirmed = confirm(
+            "This will overwrite your data. Are you really sure?")
+        if not confirmed:
+            return 0
+    
+    source = remote
+    destination = local
+    
+    synchronize(source, destination)
+    sync_data["previous_direction"] = "receive"
     write_sync_data(sync_data, sync_data_path)
 
 def read_sync_data(path):
