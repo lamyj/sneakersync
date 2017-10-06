@@ -63,11 +63,16 @@ def send(destination):
         
         command = [
             "rsync",
-            "--archive", "--xattrs", "--delete", "--progress", "--stats",
-            os.path.join(module, ""), 
-            os.path.join(destination, module.lstrip("/"), "")
+            "--archive", "--xattrs", "--delete", "--relative",
+            "--progress", "--stats"
         ]
-        print " ".join(command)
+        command += get_filters(configuration.get("filters", []))
+        command += get_filters(module.get("filters", []))
+        command += [
+            os.path.join("/." + module["root"], ""), 
+            os.path.join(destination, "")
+        ]
+        subprocess.check_call(command)
     
     sync_data["previous_direction"] = "send"
     sync_data["previous_date"] = datetime.datetime.now()
