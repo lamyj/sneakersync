@@ -59,7 +59,7 @@ def send(destination):
     
     for module in configuration["modules"]:
         # WARNING: make sure there is no "/" at the end of the module
-        module = module.rstrip("/")
+        module["root"] = module["root"].rstrip("/")
         
         command = [
             "rsync",
@@ -119,8 +119,9 @@ def read_configuration(path):
                 configuration.update(data)
     
     for module in configuration["modules"]:
-        if not module.startswith("/"):
-            raise Exception("Module path \"{}\" is not absolute".format(module))
+        if not module["root"].startswith("/"):
+            raise Exception(
+                "Module path \"{}\" is not absolute".format(module["root"]))
     
     return configuration
 
@@ -144,6 +145,21 @@ def confirm(message):
     while user_input.lower() not in ["y", "n"]: 
         user_input = raw_input("{} [yn] ".format(message))
     return (user_input == "y")
+
+def get_filters(filters):
+    arguments = []
+    for filter_ in filters:
+        if len(filter_) > 1:
+            raise Exception(
+                "Filter must contain only one entry: {}".format(filter_))
+        if "exclude" in filter_:
+            arguments += ["--exclude", filter_["exclude"]]
+        elif "include" in filter_:
+            arguments += ["--include", filter_["include"]]
+        else:
+            raise Exception(
+                "Filter must contain include or exclude: {}".format(filter_))
+    return arguments
 
 def write_sync_data(sync_data, path):
     with open(path, "w") as fd:
