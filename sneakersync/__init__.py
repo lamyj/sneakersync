@@ -22,10 +22,6 @@ remote = "/Volumes/Sneakernet"
 def main():
     parser = argparse.ArgumentParser(
         description="Send and receive files through the sneakernet")
-    parser.add_argument(
-        "--configuration_path",default=os.path.join(here, "sneakernet.cfg"))
-    parser.add_argument(
-        "--sync-data-path",default=os.path.join(here, "sneakernet.dat"))
     subparsers = parser.add_subparsers(help="Sub-commands help")
     
     send_parser = subparsers.add_parser(
@@ -46,8 +42,8 @@ def main():
     
     return 0
 
-def send(destination, configuration_path, sync_data_path):
-    sync_data = read_sync_data(sync_data_path)
+def send(destination):
+    sync_data = read_sync_data(os.path.join(destination, "sneakersync.dat"))
     if sync_data["previous_direction"] == "send":
         confirmed = confirm(
             "WARNING: "
@@ -57,8 +53,9 @@ def send(destination, configuration_path, sync_data_path):
                 sync_data["previous_date"].strftime("%c")))
         if not confirmed:
             return 0
-        
-    configuration = read_configuration(configuration_path)
+    
+    configuration = read_configuration(
+        os.path.join(destination, "sneakersync.cfg"))
     
     for module in configuration["modules"]:
         # WARNING: make sure there is no "/" at the end of the module
@@ -75,7 +72,7 @@ def send(destination, configuration_path, sync_data_path):
     sync_data["previous_direction"] = "send"
     sync_data["previous_date"] = datetime.datetime.now()
     sync_data["previous_host"] = socket.gethostname()
-    write_sync_data(sync_data, sync_data_path)
+    write_sync_data(sync_data, os.path.join(destination, "sneakersync.dat"))
 
 def receive(source, configuration_path, sync_data_path):
     sync_data = read_sync_data(sync_data_path)
