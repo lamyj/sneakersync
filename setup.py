@@ -16,7 +16,7 @@ setup(
     description="Synchronize files through the sneakernet",
     long_description=long_description,
     
-    url="https://www.cabbages-and-kings.net",
+    url="https://github.com/lamyj/sneakersync",
     
     author="Julien Lamy",
     author_email="julien@seasofcheese.net",
