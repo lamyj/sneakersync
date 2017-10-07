@@ -69,8 +69,8 @@ def send(destination):
     sync_data["previous_host"] = socket.gethostname()
     write_sync_data(sync_data, os.path.join(destination, "sneakersync.dat"))
 
-def receive(source, configuration_path, sync_data_path):
-    sync_data = read_sync_data(sync_data_path)
+def receive(source):
+    sync_data = read_sync_data(os.path.join(source, "sneakersync.dat"))
     if sync_data["previous_direction"] == "receive":
         confirmed = confirm(
             "WARNING: "
@@ -85,22 +85,27 @@ def receive(source, configuration_path, sync_data_path):
         if not confirmed:
             return 0
     
-    configuration = read_configuration(configuration_path)
+    configuration = read_configuration(os.path.join(source, "sneakersync.cfg"))
     
     for module in configuration["modules"]:
         # WARNING: make sure there is no "/" at the end of the module
-        module = module.rstrip("/")
+        module["root"] = module["root"].rstrip("/")
         
         command = [
             "rsync",
-            "--archive", "--xattrs", "--delete", "--progress", "--stats",
-            os.path.join(source, module.lstrip("/"), ""),
-            os.path.join(module, "")
+            "--archive", "--xattrs", "--delete", 
+            "--progress", "--stats"
         ]
-        print " ".join(command)
+        command += get_filters(configuration["filters"])
+        command += get_filters(module["filters"])
+        command += [
+            os.path.join(source, module["root"].lstrip("/"), ""),
+            os.path.join(module["root"], "")
+        ]
+        subprocess.check_call(command)
         
     sync_data["previous_direction"] = "receive"
-    write_sync_data(sync_data, sync_data_path)
+    write_sync_data(sync_data, os.path.join(source, "sneakersync.dat"))
 
 def read_configuration(path):
     configuration = {
