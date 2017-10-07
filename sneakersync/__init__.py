@@ -56,8 +56,8 @@ def send(destination):
             "--archive", "--xattrs", "--delete", "--relative",
             "--progress", "--stats"
         ]
-        command += get_filters(configuration.get("filters", []))
-        command += get_filters(module.get("filters", []))
+        command += get_filters(configuration["filters"])
+        command += get_filters(module["filters"])
         command += [
             os.path.join("/." + module["root"], ""), 
             os.path.join(destination, "")
@@ -104,7 +104,8 @@ def receive(source, configuration_path, sync_data_path):
 
 def read_configuration(path):
     configuration = {
-        "modules": []
+        "modules": [],
+        "filters": []
     }
     
     if os.path.isfile(path):
@@ -117,6 +118,7 @@ def read_configuration(path):
         if not module["root"].startswith("/"):
             raise Exception(
                 "Module path \"{}\" is not absolute".format(module["root"]))
+        module.setdefault("filters", [])
     
     return configuration
 
