@@ -9,14 +9,13 @@ here = os.path.abspath(os.path.dirname(__file__))
 try:
     import pypandoc
     long_description = pypandoc.convert('README.md', 'rst')
-    print long_description
 except(IOError, ImportError):
     with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
         long_description = f.read()
 
 setup(
     name="sneakersync",
-    version="1.0.0",
+    version="1.0.1",
     
     description="Synchronize files through the sneakernet",
     long_description=long_description,
