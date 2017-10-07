@@ -6,8 +6,13 @@ from setuptools import setup, find_packages
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
-    long_description = f.read()
+try:
+    import pypandoc
+    long_description = pypandoc.convert('README.md', 'rst')
+    print long_description
+except(IOError, ImportError):
+    with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
+        long_description = f.read()
 
 setup(
     name="sneakersync",
