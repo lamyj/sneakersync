@@ -7,17 +7,7 @@ import socket
 import subprocess
 import sys
 
-here = os.path.abspath(os.path.dirname(sys.argv[0]))
-if sys.version_info.major == 2:
-    sys.path.insert(0, "lib")
-elif sys.version_info.major == 3:
-    sys.path.insert(0, "lib3")
-else:
-    raise NotImplementedError("Unknown Python version: {}".format(sys.version))
-
 import yaml
-
-remote = "/Volumes/Sneakernet"
 
 def main():
     parser = argparse.ArgumentParser(
