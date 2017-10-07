@@ -35,3 +35,12 @@ filters:
 ```
 
 Filters defined at the top-level will have priority over module-level filters.
+
+## Usage
+
+1. Create a filesystem on a removable drive that matches the source and target computers. 
+2. Optional, but highly recommended: [encrypt](https://en.wikipedia.org/wiki/Disk_encryption) your removable drive.
+3. Store the [configuration](#Configuration) in a file named `sneakersync.cfg` on the root of the drive.
+4. To send data, run `sneakersync send <PATH_TO_YOUR_DRIVE>`.
+5. Move your drive to the other computer and plug it in.
+6. To receive data, run `sneakersync receive <PATH_TO_YOUR_DRIVE>`.
