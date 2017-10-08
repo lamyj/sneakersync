@@ -15,7 +15,7 @@ except(IOError, ImportError):
 
 setup(
     name="sneakersync",
-    version="1.0.1",
+    version="1.0.2",
     
     description="Synchronize files through the sneakernet",
     long_description=long_description,
@@ -47,7 +47,8 @@ setup(
     
     keywords="synchronization, removable drive, sneakernet",
 
-    packages=find_packages(exclude=["pyyaml"]),
+    packages=find_packages(),
+    install_requires=["pyyaml"],
     
     entry_points={ "console_scripts": [ "sneakersync=sneakersync:main"] },
 )
