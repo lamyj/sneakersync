@@ -2,6 +2,7 @@
 
 import argparse
 import datetime
+import logging
 import os
 import socket
 import subprocess
@@ -9,9 +10,15 @@ import sys
 
 import yaml
 
+logger = logging.getLogger(__name__)
+
 def main():
     parser = argparse.ArgumentParser(
         description="Send and receive files through the sneakernet")
+    parser.add_argument(
+        "--verbosity", "-v",
+        choices=["warning", "info", "debug"], default="warning")
+    
     subparsers = parser.add_subparsers(help="Sub-commands help")
     
     send_parser = subparsers.add_parser(
@@ -27,10 +34,35 @@ def main():
     receive_parser.set_defaults(function=receive)
     
     arguments = vars(parser.parse_args())
+    
+    verbosity = arguments.pop("verbosity")
+    logging.basicConfig(
+        level=verbosity.upper(), 
+        format="%(levelname)s: %(message)s")
+        
     function = arguments.pop("function")
-    function(**arguments)
+    
+    try:
+        function(**arguments)
+    except SneakersyncException as e:
+        logger.error(
+            "Could not {} module {}: \n{}".format(
+                e.action, e.module["root"], e.text))
+        if logger.getEffectiveLevel() <= logging.DEBUG:
+            raise
+    except Exception as e:
+        logger.error(e)
+        if logger.getEffectiveLevel() <= logging.DEBUG:
+            raise
     
     return 0
+
+class SneakersyncException(Exception):
+    def __init__(self, action, module, text):
+        Exception.__init__(self)
+        self.action = action
+        self.module = module
+        self.text = text
 
 def send(destination):
     sync_data = read_sync_data(os.path.join(destination, "sneakersync.dat"))
@@ -48,6 +80,7 @@ def send(destination):
         os.path.join(destination, "sneakersync.cfg"))
     
     for module in configuration["modules"]:
+        print("Sending {}".format(module["root"]))
         # WARNING: make sure there is no "/" at the end of the module
         module["root"] = module["root"].rstrip("/")
         
@@ -62,7 +95,8 @@ def send(destination):
             os.path.join("/." + module["root"], ""), 
             os.path.join(destination, "")
         ]
-        subprocess.check_call(command)
+        
+        call_subprocess(command, "send", module)
     
     sync_data["previous_direction"] = "send"
     sync_data["previous_date"] = datetime.datetime.now()
@@ -88,6 +122,7 @@ def receive(source):
     configuration = read_configuration(os.path.join(source, "sneakersync.cfg"))
     
     for module in configuration["modules"]:
+        print("Receiving {}".format(module["root"]))
         # WARNING: make sure there is no "/" at the end of the module
         module["root"] = module["root"].rstrip("/")
         
@@ -102,7 +137,8 @@ def receive(source):
             os.path.join(source, module["root"].lstrip("/"), ""),
             os.path.join(module["root"], "")
         ]
-        subprocess.check_call(command)
+        
+        call_subprocess(command, "receive", module)
         
     sync_data["previous_direction"] = "receive"
     write_sync_data(sync_data, os.path.join(source, "sneakersync.dat"))
@@ -147,6 +183,18 @@ def confirm(message):
     while user_input.lower() not in ["y", "n"]: 
         user_input = raw_input("{} [yn] ".format(message))
     return (user_input == "y")
+    
+def call_subprocess(command, action, module):
+    output = []
+    process = subprocess.Popen(
+        command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    for line in iter(process.stdout.readline, ""):
+        output.append(line)
+        if logger.getEffectiveLevel() <= logging.INFO:
+            sys.stdout.write(line)
+    process.poll()
+    if process.returncode != 0:
+        raise SneakersyncException(action, module, "".join(output))
 
 def get_filters(filters):
     arguments = []
