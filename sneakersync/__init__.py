@@ -33,6 +33,10 @@ def send(destination):
     
     for module in configuration["modules"]:
         print("Sending {}".format(module["root"]))
+        if not os.path.isdir(module["root"]):
+            logger.warn("No such file or directory: {}".format(module["root"]))
+            continue
+            
         # WARNING: make sure there is no "/" at the end of the module
         module["root"] = module["root"].rstrip("/")
         
