@@ -50,5 +50,5 @@ setup(
     packages=find_packages(),
     install_requires=["pyyaml"],
     
-    entry_points={ "console_scripts": [ "sneakersync=sneakersync:main"] },
+    entry_points={ "console_scripts": [ "sneakersync=sneakersync.main:main"] },
 )
