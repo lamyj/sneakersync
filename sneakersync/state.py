@@ -31,4 +31,4 @@ class State(object):
                 if data:
                     state.update(data)
         
-        return State(path, **data)
+        return State(path, **state)
