@@ -6,14 +6,14 @@ import sys
 
 import yaml
 
-from exception import SneakersyncException
+from .exception import SneakersyncException
 import sys
 sys.modules["sneakersync"].Exception = SneakersyncException
 
 logger = logging.getLogger(__name__)
 
-from rsync import *
-from state import State
+from .rsync import *
+from .state import State
 
 def send(destination):
     """Send modules on the sneakernet."""
