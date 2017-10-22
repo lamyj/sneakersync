@@ -48,7 +48,7 @@ setup(
     keywords="synchronization, removable drive, sneakernet",
 
     packages=find_packages(),
-    install_requires=["pyyaml"],
+    install_requires=["pyyaml", "six"],
     
     entry_points={ "console_scripts": [ "sneakersync=sneakersync.main:main"] },
 )

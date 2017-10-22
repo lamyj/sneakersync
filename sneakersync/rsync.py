@@ -27,10 +27,13 @@ def call_subprocess(command, action, module):
     output = []
     process = subprocess.Popen(
         command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    for line in iter(process.stdout.readline, ""):
+    for line in iter(process.stdout.readline, b""):
         output.append(line)
         if sneakersync.logger.getEffectiveLevel() <= logging.INFO:
-            sys.stdout.write(line)
-    process.poll()
+            sys.stdout.write(
+                line.decode(sys.stdout.encoding or sys.stdin.encoding))
+    
+    process.wait()
+    process.stdout.close()
     if process.returncode != 0:
         raise sneakersync.Exception(action, module, "".join(output))

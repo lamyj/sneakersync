@@ -42,7 +42,7 @@ class TestTransmit(unittest.TestCase):
                 fd.write("Content of bar.{}".format(i+1))
             xattr.setxattr(
                 os.path.join(module_root, "subdir", "bar.{}".format(i+1)),
-                "attribute_name", "attribute_value")
+                b"attribute_name", b"attribute_value")
             os.chmod(
                 os.path.join(module_root, "subdir", "bar.{}".format(i+1)),
                 0o440)
@@ -174,9 +174,10 @@ class TestTransmit(unittest.TestCase):
                         ])
                 
                 for name in filenames:
-                    self.assertEqual(
-                        open(os.path.join(local_dirpath, name)).read(),
-                        open(os.path.join(dirpath, name)).read())
+                    path1 = os.path.join(local_dirpath, name)
+                    path2 = os.path.join(dirpath, name)
+                    with open(path1) as fd1, open(path2) as fd2:
+                        self.assertEqual(fd1.read(), fd2.read())
             
             for dirpath, dirnames, filenames in os.walk(local_root):
                 local_clone_dirpath = dirpath.replace(

@@ -17,7 +17,7 @@ class TestConfiguration(unittest.TestCase):
     
     def test_no_filter(self):
         fd, path = tempfile.mkstemp()
-        os.write(fd, "modules: [{root: /foo/bar}]")
+        os.write(fd, b"modules: [{root: /foo/bar}]")
         os.close(fd)
         try:
             configuration = sneakersync.read_configuration(path)
@@ -46,7 +46,7 @@ class TestConfiguration(unittest.TestCase):
     def test_module_filter(self):
         fd, path = tempfile.mkstemp()
         os.write(
-            fd, "{modules: [{root: /foo/bar}], filters: [{exclude: foo.pyc}]}")
+            fd, b"{modules: [{root: /foo/bar}], filters: [{exclude: foo.pyc}]}")
         os.close(fd)
         try:
             configuration = sneakersync.read_configuration(path)
