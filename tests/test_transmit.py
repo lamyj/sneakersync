@@ -9,7 +9,7 @@ import xattr
 
 import sneakersync
 
-class TestSend(unittest.TestCase):
+class TestTransmit(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         unittest.TestCase.__init__(self, *args, **kwargs)
         self.local = None
@@ -20,7 +20,7 @@ class TestSend(unittest.TestCase):
         # respect to permissions
         here = os.path.abspath(os.path.dirname(__file__))
         
-        self.local = tempfile.mkdtemp(dir=here)
+        self.local = tempfile.mkdtemp(dir=here, suffix=".local")
         for i in range(3):
             module_root = os.path.join(self.local, "module_{}".format(1+i))
             os.makedirs(module_root)
@@ -52,7 +52,7 @@ class TestSend(unittest.TestCase):
                     "locally_excluded.{}".format(i+1)), "w") as fd:
                 fd.write("Content of locally_excluded.{}".format(i+1))
         
-        self.sneakerdrive = tempfile.mkdtemp(dir=here)
+        self.sneakerdrive = tempfile.mkdtemp(dir=here, suffix=".sneakerdrive")
         with open(os.path.join(self.sneakerdrive, "sneakersync.cfg"), "w") as fd:
             fd.write("\n".join([
                 "modules:",
@@ -68,25 +68,85 @@ class TestSend(unittest.TestCase):
             ]))
         
         self.local_clone = "{}.clone".format(self.local)
-        os.makedirs(self.local_clone)
+        subprocess.call([
+            "rsync", "-a", "--delete", "-X", 
+            os.path.join(self.local, ""), os.path.join(self.local_clone, "")])
     
     def tearDown(self):
         shutil.rmtree(self.local_clone)
         shutil.rmtree(self.sneakerdrive)
         shutil.rmtree(self.local)
     
-    def test_transmit(self):
+    def test_empty(self):
         sneakersync.send(self.sneakerdrive)
-        
+        self._swap()
         for entry in os.listdir(self.local):
-            os.rename(
-                os.path.join(self.local, entry),
-                os.path.join(self.local_clone, entry))
-        
+            shutil.rmtree(os.path.join(self.local, entry))
         sneakersync.receive(self.sneakerdrive)
         
         self._check()
-
+    
+    def test_modify_content(self):
+        # Initialize sneakerdrive
+        sneakersync.send(self.sneakerdrive)
+        self._swap()
+        sneakersync.receive(self.sneakerdrive)
+        
+        path = os.path.join(self.local, "module_1", "subdir", "bar.1")
+        os.chmod(path, 0o640)
+        with open(path, "w") as fd:
+            fd.write("new content")
+        os.chmod(path, 0o440)
+        
+        sneakersync.send(self.sneakerdrive)
+        self._swap()
+        sneakersync.receive(self.sneakerdrive)
+        
+        self._check()
+    
+    def test_modify_xattr(self):
+        # Initialize sneakerdrive
+        sneakersync.send(self.sneakerdrive)
+        self._swap()
+        sneakersync.receive(self.sneakerdrive)
+        
+        path = os.path.join(self.local, "module_1", "subdir", "bar.1")
+        os.chmod(path, 0o640)
+        xattr.removexattr(path, "attribute_name")
+        os.chmod(path, 0o440)
+        
+        sneakersync.send(self.sneakerdrive)
+        self._swap()
+        sneakersync.receive(self.sneakerdrive)
+        
+        self._check()
+    
+    def test_transmit_modify_excluded(self):
+        with open(
+                os.path.join(
+                    self.local, "module_1", "globally_excluded.1"), "w") as fd:
+            fd.write("globally-excluded modified")
+        with open(
+                os.path.join(
+                    self.local, "module_3", "subdir", "locally_excluded.3"), 
+                "w") as fd:
+            fd.write("locally-excluded modified")
+        with open(
+                os.path.join(
+                    self.local, "module_2", "subdir", "foo.2"), "w") as fd:
+            fd.write("skipped modified")
+        
+        sneakersync.send(self.sneakerdrive)
+        self._swap()
+        sneakersync.receive(self.sneakerdrive)
+        
+        self._check()
+    
+    def _swap(self):
+        os.rename(self.local, self.local+".tmp")
+        os.rename(self.local_clone, self.local)
+        os.rename(self.local+".tmp", self.local_clone)
+    
     def _check(self):
         configuration = sneakersync.read_configuration(
             os.path.join(self.sneakerdrive, "sneakersync.cfg"))

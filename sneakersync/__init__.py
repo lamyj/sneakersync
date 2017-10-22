@@ -42,7 +42,7 @@ def send(destination):
         
         command = [
             "rsync",
-            "--archive", "--xattrs", "--delete", "--relative",
+            "--archive", "--xattrs", "--delete", "--relative", "--fake-super",
             "--progress", "--stats"
         ]
         command += get_filters(configuration["filters"])
@@ -85,7 +85,7 @@ def receive(source):
         
         command = [
             "rsync",
-            "--archive", "--xattrs", "--delete", 
+            "--archive", "--xattrs", "--delete", "--fake-super",
             "--progress", "--stats"
         ]
         command += get_filters(configuration["filters"])
