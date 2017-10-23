@@ -4,11 +4,11 @@ import os
 
 from setuptools import setup, find_packages
 
-here = os.path.abspath(os.path.dirname(__file__))
+here = os.path.dirname(os.path.abspath(__file__))
 
 try:
     import pypandoc
-    long_description = pypandoc.convert('README.md', 'rst')
+    long_description = pypandoc.convert(os.path.join(here, "README.md"), "rst")
 except(IOError, ImportError):
     with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
         long_description = f.read()
@@ -48,6 +48,8 @@ setup(
     keywords="synchronization, removable drive, sneakernet",
 
     packages=find_packages(),
+    include_package_data=True,
+    data_files = [("", ["README.md"])],
     install_requires=["pyyaml", "six"],
     
     entry_points={ "console_scripts": [ "sneakersync=sneakersync.main:main"] },
