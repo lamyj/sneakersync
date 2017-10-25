@@ -29,13 +29,12 @@ def call_subprocess(command, action, module):
         command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     for line in iter(process.stdout.readline, b""):
         output.append(line)
-        if sneakersync.logger.getEffectiveLevel() <= logging.INFO:
-            encoding = (
-                getattr(sys.stdout, "encoding", None)
-                or getattr(sys.stdin, "encoding", None)
-                or "utf-8"
-            )
-            sys.stdout.write(line.decode(encoding))
+        encoding = (
+            getattr(sys.stdout, "encoding", None)
+            or getattr(sys.stdin, "encoding", None)
+            or "utf-8"
+        )
+        sys.stdout.write(line.decode(encoding))
     
     process.wait()
     process.stdout.close()

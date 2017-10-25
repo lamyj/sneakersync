@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 import subprocess
@@ -16,6 +17,7 @@ class TestTransmit(unittest.TestCase):
         self.sneakerdrive = None
     
     def setUp(self):
+        sneakersync.logger.setLevel(logging.ERROR)
         # WARNING: don't use the default temp dir, it might behave weirdly with
         # respect to permissions
         here = os.path.abspath(os.path.dirname(__file__))

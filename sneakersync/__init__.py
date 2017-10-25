@@ -33,7 +33,9 @@ def send(destination):
         os.path.join(destination, "sneakersync.cfg"))
     
     for module in configuration["modules"]:
-        print("Sending {}".format(module["root"]))
+        if sneakersync.logger.getEffectiveLevel() <= logging.WARNING:
+            print("Sending {}".format(module["root"]))
+        
         if not os.path.isdir(module["root"]):
             logger.warn("No such file or directory: {}".format(module["root"]))
             continue
@@ -43,9 +45,15 @@ def send(destination):
         
         command = [
             "rsync",
-            "--archive", "--xattrs", "--delete", "--relative", "--fake-super",
-            "--progress", "--stats"
+            "--archive", "--xattrs", "--delete", "--relative", "--fake-super"
         ]
+        if sneakersync.logger.getEffectiveLevel() <= logging.WARNING:
+            command.append("--verbose")
+        if sneakersync.logger.getEffectiveLevel() <= logging.INFO:
+            command.append("--stats")
+        if sneakersync.logger.getEffectiveLevel() <= logging.DEBUG:
+            command.append("--verbose")
+        
         command += get_filters(configuration["filters"])
         command += get_filters(module["filters"])
         command += [
@@ -80,15 +88,23 @@ def receive(source):
     configuration = read_configuration(os.path.join(source, "sneakersync.cfg"))
     
     for module in configuration["modules"]:
-        print("Receiving {}".format(module["root"]))
+        if sneakersync.logger.getEffectiveLevel() <= logging.WARNING:
+            print("Receiving {}".format(module["root"]))
+        
         # WARNING: make sure there is no "/" at the end of the module
         module["root"] = module["root"].rstrip("/")
         
         command = [
             "rsync",
-            "--archive", "--xattrs", "--delete", "--fake-super",
-            "--progress", "--stats"
+            "--archive", "--xattrs", "--delete", "--fake-super"
         ]
+        if sneakersync.logger.getEffectiveLevel() <= logging.WARNING:
+            command.append("--verbose")
+        if sneakersync.logger.getEffectiveLevel() <= logging.INFO:
+            command.append("--stats")
+        if sneakersync.logger.getEffectiveLevel() <= logging.DEBUG:
+            command.append("--verbose")
+        
         command += get_filters(configuration["filters"])
         command += get_filters(module["filters"])
         command += [

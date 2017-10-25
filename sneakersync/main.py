@@ -9,7 +9,7 @@ def main():
         description="Send and receive files through the sneakernet")
     parser.add_argument(
         "--verbosity", "-v",
-        choices=["warning", "info", "debug"], default="warning")
+        choices=["error", "warning", "info", "debug"], default="warning")
     
     subparsers = parser.add_subparsers(help="Sub-commands help")
     
