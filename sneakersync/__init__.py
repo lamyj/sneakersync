@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 from .rsync import *
 from .state import State
 
-def send(destination):
+def send(destination, progress):
     """Send modules on the sneakernet."""
     
     state = State.load(os.path.join(destination, "sneakersync.dat"))
@@ -47,12 +47,7 @@ def send(destination):
             "rsync",
             "--archive", "--xattrs", "--delete", "--relative", "--fake-super"
         ]
-        if sneakersync.logger.getEffectiveLevel() <= logging.WARNING:
-            command.append("--verbose")
-        if sneakersync.logger.getEffectiveLevel() <= logging.INFO:
-            command.append("--stats")
-        if sneakersync.logger.getEffectiveLevel() <= logging.DEBUG:
-            command.append("--verbose")
+        command.extend(get_verbosity_options(progress))
         
         command += get_filters(configuration["filters"])
         command += get_filters(module["filters"])
@@ -68,7 +63,7 @@ def send(destination):
     state.previous_host = socket.gethostname()
     state.save()
 
-def receive(source):
+def receive(source, progress):
     """Receive modules from the sneakernet."""
     
     state = State.load(os.path.join(source, "sneakersync.dat"))
@@ -98,12 +93,7 @@ def receive(source):
             "rsync",
             "--archive", "--xattrs", "--delete", "--fake-super"
         ]
-        if sneakersync.logger.getEffectiveLevel() <= logging.WARNING:
-            command.append("--verbose")
-        if sneakersync.logger.getEffectiveLevel() <= logging.INFO:
-            command.append("--stats")
-        if sneakersync.logger.getEffectiveLevel() <= logging.DEBUG:
-            command.append("--verbose")
+        command.extend(get_verbosity_options(progress))
         
         command += get_filters(configuration["filters"])
         command += get_filters(module["filters"])

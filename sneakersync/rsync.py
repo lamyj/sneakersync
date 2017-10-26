@@ -21,6 +21,16 @@ def get_filters(filters):
                 "Filter must contain include or exclude: {}".format(filter_))
     return arguments
 
+def get_verbosity_options(progress):
+    options = []
+    if progress:
+        options.append("--progress")
+    if sneakersync.logger.getEffectiveLevel() <= logging.INFO:
+        options.append("--stats")
+    if sneakersync.logger.getEffectiveLevel() <= logging.DEBUG:
+        options.extend(["--verbose", "--verbose"])
+    return options
+
 def call_subprocess(command, action, module):
     """Call a command, redirect output given current logging level."""
     
