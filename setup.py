@@ -15,7 +15,7 @@ except(IOError, ImportError):
 
 setup(
     name="sneakersync",
-    version="1.0.2",
+    version="1.1.0",
     
     description="Synchronize files through the sneakernet",
     long_description=long_description,
