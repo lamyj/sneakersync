@@ -80,19 +80,19 @@ class TestTransmit(unittest.TestCase):
         shutil.rmtree(self.local)
     
     def test_empty(self):
-        sneakersync.send(self.sneakerdrive)
+        sneakersync.send(self.sneakerdrive, False)
         self._swap()
         for entry in os.listdir(self.local):
             shutil.rmtree(os.path.join(self.local, entry))
-        sneakersync.receive(self.sneakerdrive)
+        sneakersync.receive(self.sneakerdrive, False)
         
         self._check()
     
     def test_modify_content(self):
         # Initialize sneakerdrive
-        sneakersync.send(self.sneakerdrive)
+        sneakersync.send(self.sneakerdrive, False)
         self._swap()
-        sneakersync.receive(self.sneakerdrive)
+        sneakersync.receive(self.sneakerdrive, False)
         
         path = os.path.join(self.local, "module_1", "subdir", "bar.1")
         os.chmod(path, 0o640)
@@ -100,26 +100,26 @@ class TestTransmit(unittest.TestCase):
             fd.write("new content")
         os.chmod(path, 0o440)
         
-        sneakersync.send(self.sneakerdrive)
+        sneakersync.send(self.sneakerdrive, False)
         self._swap()
-        sneakersync.receive(self.sneakerdrive)
+        sneakersync.receive(self.sneakerdrive, False)
         
         self._check()
     
     def test_modify_xattr(self):
         # Initialize sneakerdrive
-        sneakersync.send(self.sneakerdrive)
+        sneakersync.send(self.sneakerdrive, False)
         self._swap()
-        sneakersync.receive(self.sneakerdrive)
+        sneakersync.receive(self.sneakerdrive, False)
         
         path = os.path.join(self.local, "module_1", "subdir", "bar.1")
         os.chmod(path, 0o640)
         xattr.removexattr(path, "attribute_name")
         os.chmod(path, 0o440)
         
-        sneakersync.send(self.sneakerdrive)
+        sneakersync.send(self.sneakerdrive, False)
         self._swap()
-        sneakersync.receive(self.sneakerdrive)
+        sneakersync.receive(self.sneakerdrive, False)
         
         self._check()
     
@@ -138,9 +138,9 @@ class TestTransmit(unittest.TestCase):
                     self.local, "module_2", "subdir", "foo.2"), "w") as fd:
             fd.write("skipped modified")
         
-        sneakersync.send(self.sneakerdrive)
+        sneakersync.send(self.sneakerdrive, False)
         self._swap()
-        sneakersync.receive(self.sneakerdrive)
+        sneakersync.receive(self.sneakerdrive, False)
         
         self._check()
     
