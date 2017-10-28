@@ -5,17 +5,12 @@ import os
 from setuptools import setup, find_packages
 
 here = os.path.dirname(os.path.abspath(__file__))
-
-try:
-    import pypandoc
-    long_description = pypandoc.convert(os.path.join(here, "README.md"), "rst")
-except(IOError, ImportError):
-    with open(os.path.join(here, "README.md"), encoding="utf-8") as f:
-        long_description = f.read()
+with open(os.path.join(here, "README"), encoding="utf-8") as f:
+    long_description = f.read()
 
 setup(
     name="sneakersync",
-    version="1.1.0",
+    version="1.1.1",
     
     description="Synchronize files through the sneakernet",
     long_description=long_description,
@@ -49,7 +44,6 @@ setup(
 
     packages=find_packages(),
     include_package_data=True,
-    data_files = [("", ["README.md"])],
     install_requires=["pyyaml", "six"],
     
     entry_points={ "console_scripts": [ "sneakersync=sneakersync.main:main"] },
