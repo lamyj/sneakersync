@@ -1,0 +1,9 @@
+#!/bin/sh
+
+rm -rf dist/ build/ sneakersync.egg-info/
+
+pandoc README.md -t rst -o README
+
+python setup.py sdist
+python2 setup.py bdist_wheel
+python3 setup.py bdist_wheel

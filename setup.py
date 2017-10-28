@@ -10,7 +10,7 @@ with open(os.path.join(here, "README"), encoding="utf-8") as f:
 
 setup(
     name="sneakersync",
-    version="1.1.1",
+    version="1.1.2",
     
     description="Synchronize files through the sneakernet",
     long_description=long_description,
