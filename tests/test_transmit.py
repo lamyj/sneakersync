@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import stat
 import tempfile
+import time
 import unittest
 
 import xattr
@@ -73,6 +74,9 @@ class TestTransmit(unittest.TestCase):
         subprocess.call([
             "rsync", "-a", "--delete", "-X", 
             os.path.join(self.local, ""), os.path.join(self.local_clone, "")])
+        
+        # Make sure that [acm]time modifications will be detected
+        time.sleep(1)
     
     def tearDown(self):
         shutil.rmtree(self.local_clone)
@@ -163,8 +167,14 @@ class TestTransmit(unittest.TestCase):
                     local_name = os.path.join(local_dirpath, name)
                     local_clone_name = os.path.join(dirpath, name)
                     
-                    self.assertEqual(
-                        os.stat(local_name), os.stat(local_clone_name))
+                    local_stat = os.stat(local_name)
+                    clone_stat = os.stat(local_clone_name)
+                    self.assertEqual(local_stat.st_mode, clone_stat.st_mode)
+                    self.assertEqual(local_stat.st_uid, clone_stat.st_uid)
+                    self.assertEqual(local_stat.st_gid, clone_stat.st_gid)
+                    self.assertEqual(local_stat.st_atime, clone_stat.st_atime)
+                    self.assertEqual(local_stat.st_ctime, clone_stat.st_ctime)
+                    self.assertEqual(local_stat.st_mtime, clone_stat.st_mtime)
                     
                     self.assertSequenceEqual(
                         [
