@@ -153,8 +153,9 @@ class TestTransmit(unittest.TestCase):
         configuration = sneakersync.read_configuration(
             os.path.join(self.sneakerdrive, "sneakersync.cfg"))
         for module in configuration["modules"]:
-            local_root = os.path.join(self.local, module["root"])
-            local_clone_root = os.path.join(self.local_clone, module["root"])
+            local_root = module["root"]
+            local_clone_root = module["root"].replace(
+                self.local, self.local_clone)
             
             for dirpath, dirnames, filenames in os.walk(local_clone_root):
                 local_dirpath = dirpath.replace(local_clone_root, local_root)
