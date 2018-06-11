@@ -1,3 +1,4 @@
+import fnmatch
 import logging
 import os
 import shutil
@@ -69,6 +70,13 @@ class TestTransmit(unittest.TestCase):
                 "filters: ",
                 "  - exclude: globally_excluded.*"
             ]))
+        
+        self.excluded = [
+            "module_1/subdir/locally_excluded.1",
+            "module_2/*",
+            "module_3/subdir/locally_excluded.3",
+            "*/globally_excluded.*"
+        ]
         
         self.local_clone = "{}.clone".format(self.local)
         subprocess.call([
@@ -167,6 +175,9 @@ class TestTransmit(unittest.TestCase):
                     local_name = os.path.join(local_dirpath, name)
                     local_clone_name = os.path.join(dirpath, name)
                     
+                    if self._is_excluded(local_name, self.local):
+                        continue
+                    
                     local_stat = os.stat(local_name)
                     clone_stat = os.stat(local_clone_name)
                     self.assertEqual(local_stat.st_mode, clone_stat.st_mode)
@@ -189,6 +200,10 @@ class TestTransmit(unittest.TestCase):
                 for name in filenames:
                     path1 = os.path.join(local_dirpath, name)
                     path2 = os.path.join(dirpath, name)
+                    
+                    if self._is_excluded(path1, self.local):
+                        continue
+                    
                     with open(path1) as fd1, open(path2) as fd2:
                         self.assertEqual(fd1.read(), fd2.read())
             
@@ -199,6 +214,12 @@ class TestTransmit(unittest.TestCase):
                     self.assertTrue(
                         os.path.exists(
                             os.path.join(local_clone_dirpath, name)))
+                    path = os.path.join(local_clone_dirpath, name)
+    
+    def _is_excluded(self, path, root):
+        excluded = any([
+            fnmatch.fnmatch(path[1+len(root):], x) for x in self.excluded])
+        return excluded
 
 if __name__ == "__main__":
     unittest.main()
