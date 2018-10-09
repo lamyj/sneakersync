@@ -11,6 +11,8 @@ def main():
         "--verbosity", "-v",
         choices=["error", "warning", "info", "debug"], default="warning")
     
+    backend = sneakersync.rsync
+    
     progress_group = parser.add_mutually_exclusive_group()
     progress_group.add_argument(
         "--progress", action="store_true", default=True, 
@@ -25,13 +27,15 @@ def main():
         "send", help="Send data on the sneakernet",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     send_parser.add_argument("destination")
-    send_parser.set_defaults(function=sneakersync.rsync.send)
+    send_parser.set_defaults(
+        function=lambda x,y: sneakersync.operations.send(x, y, backend))
     
     receive_parser = subparsers.add_parser(
         "receive", help="Receive data from the sneakernet",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     receive_parser.add_argument("source")
-    receive_parser.set_defaults(function=sneakersync.rsync.receive)
+    receive_parser.set_defaults(
+        function=lambda x,y: sneakersync.operations.receive(x, y, backend))
     
     arguments = vars(parser.parse_args())
     

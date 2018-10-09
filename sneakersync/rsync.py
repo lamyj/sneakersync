@@ -1,5 +1,7 @@
+import datetime
 import logging
 import os
+import socket
 import subprocess
 import sys
 
@@ -7,96 +9,47 @@ sneakersync = sys.modules["sneakersync"]
 
 from .state import State
 
-def send(destination, progress):
-    """Send modules on the sneakernet."""
-    
-    state = State.load(os.path.join(destination, "sneakersync.dat"))
-    if state.previous_direction == "send":
-        confirmed = confirm(
-            "WARNING: "
-            "do you want to re-send the current files "
-            "(sent from {} on {})?".format(
-                state.previous_host, state.previous_date.strftime("%c")))
-        if not confirmed:
-            return 0
-    
-    configuration = read_configuration(
-        os.path.join(destination, "sneakersync.cfg"))
-    
-    for module in configuration["modules"]:
-        if sneakersync.logger.getEffectiveLevel() <= logging.WARNING:
-            print("Sending {}".format(module["root"]))
+def send(destination, configuration, module, progress):
+    if not os.path.isdir(module["root"]):
+        logger.warn("No such file or directory: {}".format(module["root"]))
+        continue
         
-        if not os.path.isdir(module["root"]):
-            logger.warn("No such file or directory: {}".format(module["root"]))
-            continue
-            
-        # WARNING: make sure there is no "/" at the end of the module
-        module["root"] = module["root"].rstrip("/")
-        
-        command = [
-            "rsync",
-            "--archive", "--xattrs", "--delete", "--relative", "--fake-super"
-        ]
-        command.extend(get_verbosity_options(progress))
-        
-        command += get_filters(configuration["filters"])
-        command += get_filters(module["filters"])
-        command += [
-            os.path.join("/." + module["root"], ""), 
-            os.path.join(destination, "")
-        ]
-        
-        call_subprocess(command, "send", module)
+    # WARNING: make sure there is no "/" at the end of the module
+    module["root"] = module["root"].rstrip("/")
     
-    state.previous_direction = "send"
-    state.previous_date = datetime.datetime.now()
-    state.previous_host = socket.gethostname()
-    state.save()
+    command = [
+        "rsync",
+        "--archive", "--xattrs", "--delete", "--relative", "--fake-super"
+    ]
+    command.extend(get_verbosity_options(progress))
+    
+    command += get_filters(configuration["filters"])
+    command += get_filters(module["filters"])
+    command += [
+        os.path.join("/." + module["root"], ""), 
+        os.path.join(destination, "")
+    ]
+    
+    call_subprocess(command, "send", module)
 
-def receive(source, progress):
-    """Receive modules from the sneakernet."""
+def receive(destination, configuration, module, progress):
+    # WARNING: make sure there is no "/" at the end of the module
+    module["root"] = module["root"].rstrip("/")
     
-    state = State.load(os.path.join(source, "sneakersync.dat"))
-    if state.previous_direction == "receive":
-        confirmed = confirm(
-            "WARNING: "
-            "do you want to receive the current files again "
-            "(sent from {} on {})?".format(
-                state.previous_host, state.previous_date.strftime("%c")))
-        if not confirmed:
-            return 0
-        confirmed = confirm(
-            "This will overwrite your data. Are you really sure?")
-        if not confirmed:
-            return 0
+    command = [
+        "rsync",
+        "--archive", "--xattrs", "--delete", "--fake-super"
+    ]
+    command.extend(get_verbosity_options(progress))
     
-    configuration = read_configuration(os.path.join(source, "sneakersync.cfg"))
+    command += get_filters(configuration["filters"])
+    command += get_filters(module["filters"])
+    command += [
+        os.path.join(source, module["root"].lstrip("/"), ""),
+        os.path.join(module["root"], "")
+    ]
     
-    for module in configuration["modules"]:
-        if sneakersync.logger.getEffectiveLevel() <= logging.WARNING:
-            print("Receiving {}".format(module["root"]))
-        
-        # WARNING: make sure there is no "/" at the end of the module
-        module["root"] = module["root"].rstrip("/")
-        
-        command = [
-            "rsync",
-            "--archive", "--xattrs", "--delete", "--fake-super"
-        ]
-        command.extend(get_verbosity_options(progress))
-        
-        command += get_filters(configuration["filters"])
-        command += get_filters(module["filters"])
-        command += [
-            os.path.join(source, module["root"].lstrip("/"), ""),
-            os.path.join(module["root"], "")
-        ]
-        
-        call_subprocess(command, "receive", module)
-        
-    state.previous_direction = "receive"
-    state.save()
+    call_subprocess(command, "receive", module)
 
 def get_filters(filters):
     """Return the rsync options for the given filters."""
