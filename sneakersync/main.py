@@ -25,13 +25,13 @@ def main():
         "send", help="Send data on the sneakernet",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     send_parser.add_argument("destination")
-    send_parser.set_defaults(function=sneakersync.send)
+    send_parser.set_defaults(function=sneakersync.rsync.send)
     
     receive_parser = subparsers.add_parser(
         "receive", help="Receive data from the sneakernet",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     receive_parser.add_argument("source")
-    receive_parser.set_defaults(function=sneakersync.receive)
+    receive_parser.set_defaults(function=sneakersync.rsync.receive)
     
     arguments = vars(parser.parse_args())
     
@@ -44,7 +44,7 @@ def main():
     
     try:
         function(**arguments)
-    except sneakersync.SneakersyncException as e:
+    except sneakersync.Exception as e:
         sneakersync.logger.error(
             "Could not {} module {}: \n{}".format(
                 e.action, e.module["root"], e.text))
