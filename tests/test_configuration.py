@@ -9,9 +9,19 @@ class TestConfiguration(unittest.TestCase):
         fd, path = tempfile.mkstemp()
         os.close(fd)
         try:
-            configuration = sneakersync.read_configuration(path)
+            configuration = sneakersync.operations.read_configuration(path)
             self.assertSequenceEqual(configuration["modules"], [])
             self.assertSequenceEqual(configuration["filters"], [])
+        finally:
+            os.remove(path)
+    
+    def test_non_absolute_path(self):
+        fd, path = tempfile.mkstemp()
+        os.write(fd, b"modules: [{root: foo/bar}]")
+        os.close(fd)
+        try:
+            with self.assertRaises(Exception):
+                sneakersync.operations.read_configuration(path)
         finally:
             os.remove(path)
     
@@ -20,7 +30,7 @@ class TestConfiguration(unittest.TestCase):
         os.write(fd, b"modules: [{root: /foo/bar}]")
         os.close(fd)
         try:
-            configuration = sneakersync.read_configuration(path)
+            configuration = sneakersync.operations.read_configuration(path)
             self.assertSequenceEqual(
                 configuration["modules"], 
                 [{"root": "/foo/bar", "filters": []}])
@@ -34,7 +44,7 @@ class TestConfiguration(unittest.TestCase):
             fd, "modules: [{root: /foo/bar, filters: [{exclude: foo.pyc}]}]")
         os.close(fd)
         try:
-            configuration = sneakersync.read_configuration(path)
+            configuration = sneakersync.operations.read_configuration(path)
             self.assertSequenceEqual(
                 configuration["modules"], 
                 [{"root": "/foo/bar", "filters": [{"exclude": "foo.pyc"}]}])
@@ -49,7 +59,7 @@ class TestConfiguration(unittest.TestCase):
             fd, b"{modules: [{root: /foo/bar}], filters: [{exclude: foo.pyc}]}")
         os.close(fd)
         try:
-            configuration = sneakersync.read_configuration(path)
+            configuration = sneakersync.operations.read_configuration(path)
             self.assertSequenceEqual(
                 configuration["modules"], [{"root": "/foo/bar", "filters": []}])
             self.assertSequenceEqual(

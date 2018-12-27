@@ -25,7 +25,7 @@ class TestMisc(unittest.TestCase):
         six.moves.input = lambda x: TestMisc.input(x, "y")
         
         try:
-            self.assertTrue(sneakersync.confirm("foo"))
+            self.assertTrue(sneakersync.operations.confirm("foo"))
             self.assertEqual(sys.stdout.getvalue().strip(), "foo [yn]")
         finally:
             six.moves.input = old_input
@@ -41,7 +41,7 @@ class TestMisc(unittest.TestCase):
         six.moves.input = lambda x: TestMisc.input(x, "n")
         
         try:
-            self.assertFalse(sneakersync.confirm("foo"))
+            self.assertFalse(sneakersync.operations.confirm("foo"))
             self.assertEqual(sys.stdout.getvalue().strip(), "foo [yn]")
         finally:
             six.moves.input = old_input
