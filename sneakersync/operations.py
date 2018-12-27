@@ -3,7 +3,6 @@ import os
 import socket
 import sys
 
-import six
 import yaml
 
 sneakersync = sys.modules["sneakersync"]
@@ -88,5 +87,5 @@ def read_configuration(path):
 def confirm(message):
     user_input = ""
     while user_input.lower() not in ["y", "n"]: 
-        user_input = six.moves.input("{} [yn] ".format(message))
+        user_input = input("{} [yn] ".format(message))
     return (user_input == "y")

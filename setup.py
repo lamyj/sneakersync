@@ -36,7 +36,6 @@ setup(
         
         "License :: OSI Approved :: MIT License",
         
-        "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 3",
     ],
     
@@ -44,7 +43,7 @@ setup(
 
     packages=find_packages(),
     include_package_data=True,
-    install_requires=["pyyaml", "six"],
+    install_requires=["pyyaml"],
     
     entry_points={ "console_scripts": [ "sneakersync=sneakersync.main:main"] },
 )
