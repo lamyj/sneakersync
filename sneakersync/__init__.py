@@ -7,4 +7,4 @@ sys.modules["sneakersync"].Exception = SneakersyncException
 
 logger = logging.getLogger(__name__)
 
-from . import borg, operations, rsync
+from . import operations, rsync
