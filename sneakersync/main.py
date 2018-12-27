@@ -43,7 +43,9 @@ def main():
     logging.basicConfig(
         level=verbosity.upper(), 
         format="%(levelname)s: %(message)s")
-        
+    
+    if "function" not in arguments:
+        parser.error("No action specified")    
     function = arguments.pop("function")
     
     try:
