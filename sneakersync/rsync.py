@@ -1,25 +1,21 @@
-import datetime
 import logging
 import os
-import socket
 import subprocess
 import sys
 
 sneakersync = sys.modules["sneakersync"]
 
-from .state import State
-
-def send(destination, configuration, module, progress):
+def send(destination, configuration, module, progress=False):
     if not os.path.isdir(module["root"]):
-        logger.warn("No such file or directory: {}".format(module["root"]))
-        continue
+        raise Exception("No such file or directory: {}".format(module["root"]))
         
     # WARNING: make sure there is no "/" at the end of the module
     module["root"] = module["root"].rstrip("/")
     
     command = [
         "rsync",
-        "--archive", "--xattrs", "--delete", "--relative", "--fake-super"
+        "--archive", "--acls", "--crtimes", "--hard-links", "--xattrs", 
+        "--delete", "--relative"
     ]
     command.extend(get_verbosity_options(progress))
     
@@ -32,13 +28,14 @@ def send(destination, configuration, module, progress):
     
     call_subprocess(command, "send", module)
 
-def receive(destination, configuration, module, progress):
+def receive(source, configuration, module, progress=False):
     # WARNING: make sure there is no "/" at the end of the module
     module["root"] = module["root"].rstrip("/")
     
     command = [
         "rsync",
-        "--archive", "--xattrs", "--delete", "--fake-super"
+        "--archive", "--acls", "--crtimes", "--hard-links", "--xattrs", 
+        "--delete"
     ]
     command.extend(get_verbosity_options(progress))
     
