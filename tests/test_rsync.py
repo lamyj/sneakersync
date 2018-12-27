@@ -153,7 +153,7 @@ class TestRsync(unittest.TestCase):
     def test_atime(self):
         os.rename(self.drives[0], self.drive)
         subprocess.check_call([
-            "touch", "-a", "-t", "2001" "02" "03" "23" "24" "25",
+            "touch", "-a", "-t", "2001" "02" "03" "23" "24" ".25",
             os.path.join(self.drive, "module_1", "foo.1")])
         os.rename(self.drive, self.drives[0])
         
@@ -163,7 +163,7 @@ class TestRsync(unittest.TestCase):
     def test_mtime(self):
         os.rename(self.drives[0], self.drive)
         subprocess.check_call([
-            "touch", "-m", "-t", "2001" "02" "03" "23" "24" "25",
+            "touch", "-m", "-t", "2001" "02" "03" "23" "24" ".25",
             os.path.join(self.drive, "module_1", "foo.1")])
         os.rename(self.drive, self.drives[0])
         
