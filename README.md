@@ -50,3 +50,7 @@ Filters defined at the top-level will have priority over module-level filters.
 4. To send data, run `sneakersync send <PATH_TO_YOUR_DRIVE>`.
 5. Move your drive to the other computer and plug it in.
 6. To receive data, run `sneakersync receive <PATH_TO_YOUR_DRIVE>`.
+
+Known limitations:
+* The last access time (`atime`) is not preserved: rsync needs to access files in order to transfer them.
+* The creation / meta-data change time (`ctime`) is not preserved: this attribute is not user-modifiable.

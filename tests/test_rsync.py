@@ -83,6 +83,7 @@ class TestRsync(unittest.TestCase):
             "rsync", "-aHAXN", "--fileflags",
             "{}/".format(self.drives[0]), "{}/".format(self.drives[1])])
         
+        time.sleep(1.1)
         self.drives[1].rename(self.drive)
         for i in [0, 2]:
             module_root = self.drive / "module_{}".format(1+i)
@@ -208,6 +209,8 @@ class TestRsync(unittest.TestCase):
             sneakersync.rsync.send(self.sneakerdrive, configuration, module)
         self.drive.rename(self.drives[0])
         
+        time.sleep(1.1)
+        
         # On second computer
         self.drives[1].rename(self.drive)
         for module in configuration["modules"]:
@@ -230,10 +233,10 @@ class TestRsync(unittest.TestCase):
                             stat_1.st_mode, stat_2.st_mode))
                     self.assertEqual(stat_1.st_uid, stat_2.st_uid)
                     self.assertEqual(stat_1.st_gid, stat_2.st_gid)
-                    self.assertEqual(stat_1.st_atime, stat_2.st_atime)
+                    # WARNING: atime will NOT be kept
                     self.assertEqual(stat_1.st_birthtime, stat_2.st_birthtime)
-                    self.assertEqual(stat_1.st_mtime, stat_2.st_mtime)
                     # WARNING ctime will NOT be kept
+                    self.assertEqual(stat_1.st_mtime, stat_2.st_mtime)
                     self.assertEqual(stat_1.st_flags, stat_2.st_flags)
                     
                     xattrs_1 = [
