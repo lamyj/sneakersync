@@ -1,4 +1,5 @@
 import datetime
+import logging
 import pathlib
 import socket
 import sys
@@ -58,7 +59,7 @@ def receive(source, progress, backend):
         if sneakersync.logger.getEffectiveLevel() <= logging.WARNING:
             print("Receiving {}".format(module["root"]))
         
-        backend.send(destination, configuration, module, progress)
+        backend.send(source, configuration, module, progress)
     
     state.previous_direction = "receive"
     state.save()

@@ -16,11 +16,7 @@ def main():
     
     progress_group = parser.add_mutually_exclusive_group()
     progress_group.add_argument(
-        "--progress", action="store_true", default=True, 
-        help="Display progress bar (default value, see --no-progress)")
-    progress_group.add_argument(
-        "--no-progress", dest="progress", action="store_false", 
-        help="Display progress bar (see --progress)")
+        "--progress", action="store_true", help="Display progress bar")
     
     subparsers = parser.add_subparsers(help="Sub-commands help")
     
@@ -29,14 +25,14 @@ def main():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     send_parser.add_argument("destination", type=pathlib.Path)
     send_parser.set_defaults(
-        function=lambda x,y: sneakersync.operations.send(x, y, backend))
+        function=lambda destination, progress: sneakersync.operations.send(destination, progress, backend))
     
     receive_parser = subparsers.add_parser(
         "receive", help="Receive data from the sneakernet",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     receive_parser.add_argument("source", type=pathlib.Path)
     receive_parser.set_defaults(
-        function=lambda x,y: sneakersync.operations.receive(x, y, backend))
+        function=lambda source, progress: sneakersync.operations.receive(source, progress, backend))
     
     arguments = vars(parser.parse_args())
     
