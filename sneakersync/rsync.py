@@ -1,40 +1,30 @@
 import logging
-import os
 import subprocess
 import sys
 
 sneakersync = sys.modules["sneakersync"]
 
 def send(destination, configuration, module, progress=False):
-    if not os.path.isdir(module["root"]):
+    if not module["root"].is_dir():
         raise Exception("No such file or directory: {}".format(module["root"]))
         
-    # WARNING: make sure there is no "/" at the end of the module
-    module["root"] = module["root"].rstrip("/")
-    
     command = [
         "rsync",
-        "--archive", "--acls", "--crtimes", "--hard-links", "--xattrs", 
+        "--archive", "--acls", "--crtimes", "--fileflags", "--hard-links", "--xattrs", 
         "--delete", "--relative"
     ]
     command.extend(get_verbosity_options(progress))
     
     command += get_filters(configuration["filters"])
     command += get_filters(module["filters"])
-    command += [
-        os.path.join("/." + module["root"], ""), 
-        os.path.join(destination, "")
-    ]
+    command += ["/.{}/".format(module["root"]),  "{}/".format(destination)]
     
     call_subprocess(command, "send", module)
 
 def receive(source, configuration, module, progress=False):
-    # WARNING: make sure there is no "/" at the end of the module
-    module["root"] = module["root"].rstrip("/")
-    
     command = [
         "rsync",
-        "--archive", "--acls", "--crtimes", "--hard-links", "--xattrs", 
+        "--archive", "--acls", "--crtimes", "--fileflags", "--hard-links", "--xattrs", 
         "--delete"
     ]
     command.extend(get_verbosity_options(progress))
@@ -42,9 +32,7 @@ def receive(source, configuration, module, progress=False):
     command += get_filters(configuration["filters"])
     command += get_filters(module["filters"])
     command += [
-        os.path.join(source, module["root"].lstrip("/"), ""),
-        os.path.join(module["root"], "")
-    ]
+        "{}{}/".format(source, module["root"]), "{}/".format(module["root"])]
     
     call_subprocess(command, "receive", module)
 

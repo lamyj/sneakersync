@@ -1,5 +1,4 @@
 import copy
-import os
 import yaml
 
 class State(object):
@@ -25,8 +24,8 @@ class State(object):
             "previous_host": None,
         }
         
-        if os.path.isfile(path):
-            with open(path) as fd:
+        if path.is_file():
+            with path.open() as fd:
                 data = yaml.load(fd)
                 if data:
                     state.update(data)

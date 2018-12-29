@@ -1,5 +1,5 @@
 import datetime
-import os
+import pathlib
 import socket
 import sys
 
@@ -12,7 +12,7 @@ from .state import State
 def send(destination, progress, backend):
     """Send modules on the sneakernet."""
     
-    state = State.load(os.path.join(destination, "sneakersync.dat"))
+    state = State.load(destination / "sneakersync.dat")
     if state.previous_direction == "send":
         confirmed = confirm(
             "WARNING: "
@@ -22,8 +22,7 @@ def send(destination, progress, backend):
         if not confirmed:
             return 0
     
-    configuration = read_configuration(
-        os.path.join(destination, "sneakersync.cfg"))
+    configuration = read_configuration(destination / "sneakersync.cfg")
     
     for module in configuration["modules"]:
         if sneakersync.logger.getEffectiveLevel() <= logging.WARNING:
@@ -39,7 +38,7 @@ def send(destination, progress, backend):
 def receive(source, progress, backend):
     """Receive modules from the sneakernet."""
     
-    state = State.load(os.path.join(source, "sneakersync.dat"))
+    state = State.load(source / "sneakersync.dat")
     if state.previous_direction == "receive":
         confirmed = confirm(
             "WARNING: "
@@ -53,7 +52,7 @@ def receive(source, progress, backend):
         if not confirmed:
             return 0
     
-    configuration = read_configuration(os.path.join(source, "sneakersync.cfg"))
+    configuration = read_configuration(source / "sneakersync.cfg")
     
     for module in configuration["modules"]:
         if sneakersync.logger.getEffectiveLevel() <= logging.WARNING:
@@ -70,16 +69,18 @@ def read_configuration(path):
         "filters": []
     }
     
-    if os.path.isfile(path):
+    if path.is_file():
         with open(path) as fd:
             data = yaml.load(fd)
             if data:
                 configuration.update(data)
     
     for module in configuration["modules"]:
-        if not module["root"].startswith("/"):
+        module["root"] = pathlib.Path(module["root"])
+        if not module["root"].is_absolute():
             raise Exception(
                 "Module path \"{}\" is not absolute".format(module["root"]))
+        
         module.setdefault("filters", [])
     
     return configuration

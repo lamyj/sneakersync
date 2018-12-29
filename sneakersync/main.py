@@ -1,5 +1,6 @@
 import argparse
 import logging
+import pathlib
 import sys
 
 import sneakersync
@@ -26,14 +27,14 @@ def main():
     send_parser = subparsers.add_parser(
         "send", help="Send data on the sneakernet",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    send_parser.add_argument("destination")
+    send_parser.add_argument("destination", type=pathlib.Path)
     send_parser.set_defaults(
         function=lambda x,y: sneakersync.operations.send(x, y, backend))
     
     receive_parser = subparsers.add_parser(
         "receive", help="Receive data from the sneakernet",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    receive_parser.add_argument("source")
+    receive_parser.add_argument("source", type=pathlib.Path)
     receive_parser.set_defaults(
         function=lambda x,y: sneakersync.operations.receive(x, y, backend))
     
