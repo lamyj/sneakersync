@@ -1,19 +1,18 @@
-from codecs import open
-import glob
 import os
 
 from setuptools import setup, find_packages
 
 here = os.path.dirname(os.path.abspath(__file__))
-with open(os.path.join(here, "README"), encoding="utf-8") as f:
+with open(os.path.join(here, "README.md")) as f:
     long_description = f.read()
 
 setup(
     name="sneakersync",
-    version="1.1.2",
+    version="1.2.0",
     
     description="Synchronize files through the sneakernet",
     long_description=long_description,
+    long_description_content_type='text/markdown',
     
     url="https://github.com/lamyj/sneakersync",
     
