@@ -14,9 +14,14 @@ def main():
     
     backend = sneakersync.rsync
     
+    # NOTE: display progress by default
     progress_group = parser.add_mutually_exclusive_group()
     progress_group.add_argument(
-        "--progress", action="store_true", help="Display progress bar")
+        "--progress", action="store_true", default=True, 
+        help="Display progress bar (default value, see --no-progress)")
+    progress_group.add_argument(
+        "--no-progress", dest="progress", action="store_false", 
+        help="Display progress bar (see --progress)")
     
     subparsers = parser.add_subparsers(help="Sub-commands help")
     

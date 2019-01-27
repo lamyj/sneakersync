@@ -8,7 +8,7 @@ with open(os.path.join(here, "README.md")) as f:
 
 setup(
     name="sneakersync",
-    version="1.2.0",
+    version="1.2.1",
     
     description="Synchronize files through the sneakernet",
     long_description=long_description,
