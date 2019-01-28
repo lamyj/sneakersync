@@ -59,7 +59,7 @@ def receive(source, progress, backend):
         if sneakersync.logger.getEffectiveLevel() <= logging.WARNING:
             print("Receiving {}".format(module["root"]))
         
-        backend.send(source, configuration, module, progress)
+        backend.receive(source, configuration, module, progress)
     
     state.previous_direction = "receive"
     state.save()
