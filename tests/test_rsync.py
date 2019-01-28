@@ -56,8 +56,9 @@ class TestRsync(test_synchronize_base.TestSynchronizeBase):
     
     def test_mtime(self):
         self.drives[0].rename(self.drive)
+        # NOTE: if time is in the past, st_birthtime will be affected too.
         subprocess.check_call([
-            "touch", "-m", "-t", "2001" "02" "03" "23" "24" ".25",
+            "touch", "-m", "-t", "2999" "02" "03" "23" "24" ".25",
             self.drive / "module_1" / "foo.1"])
         self.drive.rename(self.drives[0])
         
@@ -65,6 +66,29 @@ class TestRsync(test_synchronize_base.TestSynchronizeBase):
         self._check_synchronized()
     
     # NOTE: birthtime cannot be changed
+    def test_add_birthtime(self):
+        with (self.drives[0] / "module_1" / "new").open("w") as fd:
+            fd.write("new file")
+        # NOTE: if time is in the past, st_birthtime will be affected too.
+        subprocess.check_call([
+            "touch", "-ma", "-t", "2999" "02" "03" "23" "24" ".25",
+            self.drives[0] / "module_1" / "new"])
+        
+        time.sleep(1.1)
+        
+        with (self.drives[1] / "module_1" / "new").open("w") as fd:
+            fd.write("new file")
+        # NOTE: if time is in the past, st_birthtime will be affected too.
+        subprocess.check_call([
+            "touch", "-ma", "-t", "2999" "02" "03" "23" "24" ".25",
+            self.drives[1] / "module_1" / "new"])
+        
+        self.assertNotEqual(
+            (self.drives[0] / "module_1" / "new").stat().st_birthtime,
+            (self.drives[1] / "module_1" / "new").stat().st_birthtime)
+        
+        self._synchronize()
+        self._check_synchronized()
     
     # NOTE: ctime is not preserved
     
