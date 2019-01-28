@@ -56,7 +56,7 @@ def get_filters(filters):
 def get_verbosity_options(progress):
     options = []
     if progress:
-        options.append("--progress")
+        options.append("--info=name")
     if sneakersync.logger.getEffectiveLevel() <= logging.INFO:
         options.append("--stats")
     if sneakersync.logger.getEffectiveLevel() <= logging.DEBUG:
