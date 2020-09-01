@@ -72,7 +72,7 @@ def read_configuration(path):
     
     if path.is_file():
         with open(path) as fd:
-            data = yaml.load(fd)
+            data = yaml.load(fd, Loader=yaml.BaseLoader)
             if data:
                 configuration.update(data)
     

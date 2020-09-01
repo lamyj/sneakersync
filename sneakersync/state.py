@@ -26,7 +26,7 @@ class State(object):
         
         if path.is_file():
             with path.open() as fd:
-                data = yaml.load(fd)
+                data = yaml.load(fd, Loader=yaml.BaseLoader)
                 if data:
                     state.update(data)
         
