@@ -3,6 +3,7 @@ import os
 import pathlib
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 import unittest
@@ -122,9 +123,11 @@ class TestSynchronizeBase(unittest.TestCase):
                     self.assertEqual(stat_1.st_uid, stat_2.st_uid)
                     self.assertEqual(stat_1.st_gid, stat_2.st_gid)
                     # WARNING: atime will NOT be kept
-                    self.assertEqual(stat_1.st_birthtime, stat_2.st_birthtime)
+                    if sys.platform == "darwin":
+                        self.assertEqual(
+                            int(stat_1.st_birthtime), int(stat_2.st_birthtime))
                     # WARNING ctime will NOT be kept
-                    self.assertEqual(stat_1.st_mtime, stat_2.st_mtime)
+                    self.assertEqual(int(stat_1.st_mtime), int(stat_2.st_mtime))
                     self.assertEqual(stat_1.st_flags, stat_2.st_flags)
                     
                     xattrs_1 = [

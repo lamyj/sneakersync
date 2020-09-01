@@ -12,7 +12,7 @@ setup(
     
     description="Synchronize files through the sneakernet",
     long_description=long_description,
-    long_description_content_type='text/markdown',
+    long_description_content_type="text/markdown",
     
     url="https://github.com/lamyj/sneakersync",
     
