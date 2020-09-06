@@ -10,11 +10,11 @@ def send(destination, configuration, module, progress=False):
         
     command = [
         "rsync",
-        "--archive", "--acls", "--fileflags", "--hard-links", "--xattrs", 
+        "--archive", "--acls", "--hard-links", "--xattrs",
         "--delete", "--relative"
     ]
     if sys.platform == "darwin":
-        command.append("--crtimes")
+        command.append("--crtimes", "--fileflags")
     command.extend(get_verbosity_options(progress))
     
     command += get_filters(configuration["filters"])
@@ -26,11 +26,11 @@ def send(destination, configuration, module, progress=False):
 def receive(source, configuration, module, progress=False):
     command = [
         "rsync",
-        "--archive", "--acls", "--fileflags", "--hard-links", "--xattrs", 
+        "--archive", "--acls", "--hard-links", "--xattrs",
         "--delete"
     ]
     if sys.platform == "darwin":
-        command.append("--crtimes")
+        command.append("--crtimes", "--fileflags")
     command.extend(get_verbosity_options(progress))
     
     command += get_filters(configuration["filters"])
