@@ -14,7 +14,7 @@ def send(destination, configuration, module, progress=False):
         "--delete", "--relative"
     ]
     if sys.platform == "darwin":
-        command.append("--crtimes", "--fileflags")
+        command.extend(["--crtimes", "--fileflags"])
     command.extend(get_verbosity_options(progress))
     
     command += get_filters(configuration["filters"])
@@ -30,7 +30,7 @@ def receive(source, configuration, module, progress=False):
         "--delete"
     ]
     if sys.platform == "darwin":
-        command.append("--crtimes", "--fileflags")
+        command.extend(["--crtimes", "--fileflags"])
     command.extend(get_verbosity_options(progress))
     
     command += get_filters(configuration["filters"])

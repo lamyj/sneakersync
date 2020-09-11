@@ -78,9 +78,15 @@ class TestSynchronizeBase(unittest.TestCase):
         self.drive.rename(self.drives[0])
         
         time.sleep(1.1)
-        subprocess.check_call([
-            "rsync", "-aHAXN", "--fileflags",
-            "{}/".format(self.drives[0]), "{}/".format(self.drives[1])])
+        command = [
+            "rsync",
+            "--archive", "--acls", "--hard-links", "--xattrs",
+            "--delete", "--relative"]
+        if sys.platform == "darwin":
+            command.extend(["--crtimes", "--fileflags"])
+        subprocess.check_call(
+            command + [
+                "{}/".format(self.drives[0]), "{}/".format(self.drives[1])])
         
         time.sleep(1.1)
         self.drives[1].rename(self.drive)
