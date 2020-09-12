@@ -65,13 +65,15 @@ class TestSynchronizeBase(unittest.TestCase):
             (module_root / "subdir").mkdir()
             with (module_root / "subdir" / "bar.{}".format(i+1)).open("w") as fd:
                 fd.write("Content of bar.{}".format(i+1))
-            xattr.setxattr(
-                module_root / "subdir" / "bar.{}".format(i+1),
-                b"attribute_name", b"attribute_value")
+            if sys.platform == "darwin":
+                xattr.setxattr(
+                    str(module_root / "subdir" / "bar.{}".format(i+1)),
+                    b"attribute_name", b"attribute_value")
             (module_root / "subdir" / "bar.{}".format(i+1)).chmod(0o402)
-            subprocess.call([
-                "chmod", "+a", "group:everyone allow delete", 
-                module_root / "subdir" / "bar.{}".format(i+1)])
+            if sys.platform == "darwin":
+                subprocess.call([
+                    "chmod", "+a", "group:everyone allow delete", 
+                    module_root / "subdir" / "bar.{}".format(i+1)])
             
             with (module_root / "subdir" / "locally_excluded.{}".format(i+1)).open("w") as fd:
                 fd.write("Content of locally_excluded.{}".format(i+1))
@@ -80,8 +82,7 @@ class TestSynchronizeBase(unittest.TestCase):
         time.sleep(1.1)
         command = [
             "rsync",
-            "--archive", "--acls", "--hard-links", "--xattrs",
-            "--delete", "--relative"]
+            "--archive", "--acls", "--hard-links", "--xattrs", "--delete"]
         if sys.platform == "darwin":
             command.extend(["--crtimes", "--fileflags"])
         subprocess.check_call(
@@ -136,19 +137,21 @@ class TestSynchronizeBase(unittest.TestCase):
                     self.assertEqual(int(stat_1.st_mtime), int(stat_2.st_mtime))
                     self.assertEqual(stat_1.st_flags, stat_2.st_flags)
                     
-                    xattrs_1 = [
-                        (x, xattr.getxattr(entry_1, x)) 
-                        for x in sorted(xattr.listxattr(entry_1))]
-                    xattrs_2 = [
-                        (x, xattr.getxattr(entry_2, x)) 
-                        for x in sorted(xattr.listxattr(entry_2))]
-                    self.assertSequenceEqual(xattrs_1, xattrs_2)
+                    if sys.platform == "darwin":
+                        xattrs_1 = [
+                            (x, xattr.getxattr(entry_1, x)) 
+                            for x in sorted(xattr.listxattr(entry_1))]
+                        xattrs_2 = [
+                            (x, xattr.getxattr(entry_2, x)) 
+                            for x in sorted(xattr.listxattr(entry_2))]
+                        self.assertSequenceEqual(xattrs_1, xattrs_2)
                     
-                    acls = [
-                        subprocess.check_output(
-                            ["ls", "-lde", x]).splitlines()[1:]
-                        for x in [entry_1, entry_2]]
-                    self.assertEqual(*acls)
+                    if sys.platform == "darwin":
+                        acls = [
+                            subprocess.check_output(
+                                ["ls", "-lde", x]).splitlines()[1:]
+                            for x in [entry_1, entry_2]]
+                        self.assertEqual(*acls)
                 
                 for name in filenames:
                     path_1 = dirpath_1 / name

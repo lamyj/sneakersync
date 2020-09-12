@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -v
+
+export WORKSPACE=${WORKSPACE:?}
+export SNEAKERSYNC_ROOT=$(pwd)
+
+python3 -m unittest discover -s tests/
+
+sneakersync --help
