@@ -5,4 +5,4 @@ set -ev
 apt-get -y update
 
 apt-get -y --no-install-recommends install \
-  acl python3-pip python3-xattr python3-yaml rsync 
+  acl python3-pip python3-setuptools python3-xattr python3-yaml rsync 
