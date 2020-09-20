@@ -42,6 +42,17 @@ filters:
 
 Filters defined at the top-level will have priority over module-level filters.
 
+Each module can have a host-specific root, e.g. if your username differs between computers, with the following syntax:
+
+```yaml
+modules:
+  - root: 
+      first.host: /home/john.doe
+      second.host: /home/john
+```
+
+If host-specific roots are used, sending or receiving using an undeclared host will cause an error.
+
 ## Usage
 
 1. Create a filesystem on a removable drive that matches the source and target computers. 

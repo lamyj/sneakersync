@@ -1,12 +1,14 @@
 import logging
+import socket
 import subprocess
 import sys
 
 sneakersync = sys.modules["sneakersync"]
 
-def send(destination, configuration, module, progress=False):
-    if not module["root"].is_dir():
-        raise Exception("No such file or directory: {}".format(module["root"]))
+def send(destination, configuration, module, state, progress=False):
+    source = sneakersync.get_module_root(module)
+    if not source.is_dir():
+        raise Exception("No such directory: {}".format(source))
         
     command = [
         "rsync",
@@ -19,11 +21,11 @@ def send(destination, configuration, module, progress=False):
     
     command += get_filters(configuration["filters"])
     command += get_filters(module["filters"])
-    command += ["/.{}/".format(module["root"]),  "{}/".format(destination)]
+    command += ["/.{}/".format(source), "{}/".format(destination)]
     
     call_subprocess(command, "send", module)
 
-def receive(source, configuration, module, progress=False):
+def receive(source, configuration, module, state, progress=False):
     command = [
         "rsync",
         "--archive", "--acls", "--hard-links", "--xattrs",
@@ -36,7 +38,9 @@ def receive(source, configuration, module, progress=False):
     command += get_filters(configuration["filters"])
     command += get_filters(module["filters"])
     command += [
-        "{}{}/".format(source, module["root"]), "{}/".format(module["root"])]
+        "{}{}/".format(
+            source, sneakersync.get_module_root(module, state.previous_host)), 
+        "{}/".format(sneakersync.get_module_root(module))]
     
     call_subprocess(command, "receive", module)
 

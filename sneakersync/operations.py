@@ -27,9 +27,9 @@ def send(destination, progress, backend):
     
     for module in configuration["modules"]:
         if sneakersync.logger.getEffectiveLevel() <= logging.WARNING:
-            print("Sending {}".format(module["root"]))
+            print("Sending {}".format(sneakersync.get_module_root(module)))
         
-        backend.send(destination, configuration, module, progress)
+        backend.send(destination, configuration, module, state, progress)
     
     state.previous_direction = "send"
     state.previous_date = datetime.datetime.now()
@@ -57,9 +57,9 @@ def receive(source, progress, backend):
     
     for module in configuration["modules"]:
         if sneakersync.logger.getEffectiveLevel() <= logging.WARNING:
-            print("Receiving {}".format(module["root"]))
+            print("Receiving {}".format(sneakersync.get_module_root(module)))
         
-        backend.receive(source, configuration, module, progress)
+        backend.receive(source, configuration, module, state, progress)
     
     state.previous_direction = "receive"
     state.save()
@@ -77,10 +77,15 @@ def read_configuration(path):
                 configuration.update(data)
     
     for module in configuration["modules"]:
-        module["root"] = pathlib.Path(module["root"])
-        if not module["root"].is_absolute():
-            raise Exception(
-                "Module path \"{}\" is not absolute".format(module["root"]))
+        if isinstance(module["root"], str):
+            module["root"] = {socket.gethostname(): module["root"]}
+        for host, path in module["root"].items():
+            path = pathlib.Path(path)
+            if not path.is_absolute():
+                raise Exception(
+                    "Module path \"{}\" is not absolute".format(module["root"]))
+            module["root"][host] = path
+        module["root"] = {h: pathlib.Path(p) for h, p in module["root"].items()}
         
         module.setdefault("filters", [])
     

@@ -24,19 +24,19 @@ class TestSynchronizeBase(unittest.TestCase):
         for drive in self.drives+[self.sneakerdrive]:
             drive.mkdir()
         
-        # The "current" hard drive: do not create the directory since it will
-        # correspond to either drive_1 or drive_2
-        self.drive = self.root / "drive"
-        
         # Sneakersync configuration:
         with (self.sneakerdrive / "sneakersync.cfg").open("w") as fd:
             fd.write("\n".join([
                 "modules:",
-                "  - root: {}/module_1".format(self.drive),
+                "  - root:",
+                "      first.host: {}/module_1".format(self.drives[0]),
+                "      second.host: {}/module_1".format(self.drives[1]),
                 "    filters: ",
                 "      - exclude: locally_excluded.1",
                 # WARNING: module_2 is skipped
-                "  - root: {}/module_3".format(self.drive),
+                "  - root:",
+                "      first.host: {}/module_3".format(self.drives[0]),
+                "      second.host: {}/module_3".format(self.drives[1]),
                 "    filters: ",
                 "      - exclude: locally_excluded.3",
                 "filters: ",
@@ -51,9 +51,8 @@ class TestSynchronizeBase(unittest.TestCase):
         ]
         
         # Create the test data
-        self.drives[0].rename(self.drive)
         for i in range(3):
-            module_root = self.drive / "module_{}".format(1+i)
+            module_root = self.drives[0] / "module_{}".format(1+i)
             module_root.mkdir()
             
             with (module_root / "foo.{}".format(i+1)).open("w") as fd:
@@ -77,7 +76,6 @@ class TestSynchronizeBase(unittest.TestCase):
             
             with (module_root / "subdir" / "locally_excluded.{}".format(i+1)).open("w") as fd:
                 fd.write("Content of locally_excluded.{}".format(i+1))
-        self.drive.rename(self.drives[0])
         
         time.sleep(1.1)
         command = [
@@ -90,20 +88,18 @@ class TestSynchronizeBase(unittest.TestCase):
                 "{}/".format(self.drives[0]), "{}/".format(self.drives[1])])
         
         time.sleep(1.1)
-        self.drives[1].rename(self.drive)
         for i in [0, 2]:
-            module_root = self.drive / "module_{}".format(1+i)
+            module_root = self.drives[1] / "module_{}".format(1+i)
             with (module_root / "globally_excluded.{}".format(i+1)).open("w") as fd:
                 fd.write("Modified content of globally_excluded.{}".format(i+1))
             with (module_root / "subdir" / "locally_excluded.{}".format(i+1)).open("w") as fd:
                 fd.write("Modified content of locally_excluded.{}".format(i+1))
-        for dirpath, dirnames, filenames in os.walk(self.drive / "module_2"):
+        for dirpath, dirnames, filenames in os.walk(self.drives[1] / "module_2"):
             for filename in filenames:
                 path = pathlib.Path(dirpath, filename)
                 path.chmod(0o600)
                 with path.open("w") as fd:
                     fd.write("Modified content of {}".format(filename))
-        self.drive.rename(self.drives[1])
 
     def tearDown(self):
         # WARNING: output of chmod is silenced
